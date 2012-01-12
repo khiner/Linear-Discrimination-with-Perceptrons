@@ -53,7 +53,31 @@ def getWeights(num):
     return weights
     
 def test(num, weights):
-    pass
+    global test_lines
+    p = 0;
+    n = 0;
+    for line in test_lines:
+        # store a line of data as a list of ints
+        data = [int(x) for x in line.strip().split(',')]
+        # expected value must be -1 or 1
+        if data[-1] == 8:
+            t = 1
+        elif data[-1] == num:
+            t = -1
+        else:
+            continue
+        
+        # obtain o
+        total = 0.0
+        for i in xrange(num_features):
+            total += weights[i]*data[i]
+        o = sgn(total)
+
+        if (o == t):
+            p = p + 1
+        else:
+            n = n + 1
+    print('Success Rate = %f\n' % (float(p)/float(n + p)))
     
 def sgn(val):
     if val > 0:
