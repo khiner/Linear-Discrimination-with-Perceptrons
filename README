@@ -1,0 +1,21 @@
+***Linear Discrimination With Perceptrons***
+
+AUTHOR: Karl Hiner
+INFO: HW1, CS 445, Machine Learning, Winter 2012.
+DESCRIPTION: A perceptron to classify the handwritten number data at
+http://archive.ics.uci.edu/ml/datasets/Optical+Recognition+of+Handwritten+Digits
+
+USAGE:
+> python perceptron.py --train=<training file> --test=<test file>
+
+<training file> and <test file> are replaced with the names of the
+training and test files, respectfully
+
+NOTES:
+With minor variations to code in perceptron.py, this perceptron is easily
+generalizable to classify any data with features and classes encoded as
+integers.
+
+The data is expected to be in CSV format, with one line per instance,
+where all integers in the line are features, except the last line, which
+should be the class of the instance.

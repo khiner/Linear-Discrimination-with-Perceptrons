@@ -1,3 +1,4 @@
+from optparse import OptionParser
 import sys
 import random
 
@@ -17,55 +18,57 @@ def main(trainfile_string, testfile_string):
     num_features = len(train_lines[0].strip().split(',')) - 1
 
     # initialize weight vectors to random values for each class.
-    #!! To generalize to any classes,
-    #!! this is the only code that needs to change
     for n in xrange(10):
         if n != 8:
             # start with random weights in range (-1, 1)            
             weights[n] = [random.uniform(-1,1) for i in xrange(num_features)]
+    # train and test each class
     for cls in weights.keys():
         train(cls)
         test(cls)
             
 def train(cls):
-    "Train perceptron to differentiate between num and 8, \
+    "Train perceptron to differentiate between cls and 8, \
     and return the trained weights weights"
     global learning_rate
     global num_features
     global train_lines
 
     for line in train_lines:
-        # store a line of data as a list of ints
-        data = [int(x) for x in line.strip().split(',')]
-        (o, t) = getOandT(data, cls)
+        # split the line of data into a vector of ints        
+        vector = [int(x) for x in line.strip().split(',')]
+        (o, t) = getOandT(vector, cls)
         # adjust the weights
         for i in xrange(num_features):
-            weights[cls][i] += learning_rate*(t - o)*data[i]
+            weights[cls][i] += learning_rate*(t - o)*vector[i]
             
     
 def test(cls):
+    "Use the provided test data file to test the trained weights\
+    for a given class number vs. 8"
     global test_lines
     p = 0;
     n = 0;
     for line in test_lines:
-        # store a line of data as a list of ints
-        data = [int(x) for x in line.strip().split(',')]
-        (o, t) = getOandT(data, cls)        
+        # split the line of data into a vector of ints
+        vector = [int(x) for x in line.strip().split(',')]
+        (o, t) = getOandT(vector, cls)        
         if (o == t):
             p = p + 1
         else:
             n = n + 1
-    print('Success Rate = %f\n' % (float(p)/float(n + p)))
+    print('Success Rate of %d vs. %d: %f\n' % (8, cls, float(p)/float(n + p)))
 
-def getOandT(data, cls):
+def getOandT(vector, cls):
     "Get o and t values"
     total = 0.0
     for i in xrange(num_features):
-        total += weights[cls][i]*data[i]
+        total += weights[cls][i]*vector[i]
     o = sgn(total)
     
-    # expected value of t is -1 or 1    
-    if data[-1] == 8:
+    # expected value of t is -1 or 1
+    # an 8 is encoded as 1, and the compared number is encoded -1
+    if vector[-1] == 8:
         t = 1
     else:
         t = -1
@@ -80,7 +83,13 @@ def sgn(val):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print 'to train, please provide two filename arguments\n'
+        print 'Usage: \n'
         sys.exit(1)
     else:
-        main(sys.argv[1], sys.argv[2])
+        parser = OptionParser()
+        parser.add_option("--train", dest="trainfile",
+                          help="specify the file with training data")
+        parser.add_option("--test", dest="testfile",
+                          help="specify the file with test data")
+        (options, args) = parser.parse_args()
+        main(options.trainfile, options.testfile)
