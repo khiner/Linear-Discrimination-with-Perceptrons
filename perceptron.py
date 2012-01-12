@@ -83,7 +83,7 @@ def sgn(val):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print 'Usage: \n'
+        print 'Usage: python perceptron.py --train=<training file> --test=<test file>'
         sys.exit(1)
     else:
         parser = OptionParser()
