@@ -37,8 +37,7 @@ def train(cls):
     for line in train_lines:
         # store a line of data as a list of ints
         data = [int(x) for x in line.strip().split(',')]
-        t = getT(data[-1])
-        o = getO(data, cls)
+        (o, t) = getOandT(data, cls)
         # adjust the weights
         for i in xrange(num_features):
             weights[cls][i] += learning_rate*(t - o)*data[i]
@@ -51,27 +50,27 @@ def test(cls):
     for line in test_lines:
         # store a line of data as a list of ints
         data = [int(x) for x in line.strip().split(',')]
-        t = getT(data[-1])
-        o = getO(data, cls)
+        (o, t) = getOandT(data, cls)        
         if (o == t):
             p = p + 1
         else:
             n = n + 1
     print('Success Rate = %f\n' % (float(p)/float(n + p)))
 
-def getT(cls):
-        # expected value must be -1 or 1    
-        if cls == 8:
-            return 1
-        else:
-            return -1
-
-def getO(data, cls):
-    "Get o value"
+def getOandT(data, cls):
+    "Get o and t values"
     total = 0.0
     for i in xrange(num_features):
         total += weights[cls][i]*data[i]
-    return sgn(total)
+    o = sgn(total)
+    
+    # expected value of t is -1 or 1    
+    if data[-1] == 8:
+        t = 1
+    else:
+        t = -1
+        
+    return (o, t)
         
 def sgn(val):
     if val > 0:
