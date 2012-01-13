@@ -28,54 +28,71 @@ def main(trainfile_string, testfile_string):
         test(cls)
             
 def train(cls):
-    "Train perceptron to differentiate between cls and 8, \
-    and return the trained weights weights"
+    """
+    Train perceptron to differentiate between cls and 8,
+    and return the trained weights weights
+    """
     global learning_rate
     global num_features
     global train_lines
 
     for line in train_lines:
-        # split the line of data into a vector of ints        
+        # split the line of data into a vector of ints    
         vector = [int(x) for x in line.strip().split(',')]
         (o, t) = getOandT(vector, cls)
+        if o == None or t == None:
+            continue
         # adjust the weights
         for i in xrange(num_features):
             weights[cls][i] += learning_rate*(t - o)*vector[i]
             
     
 def test(cls):
-    "Use the provided test data file to test the trained weights\
-    for a given class number vs. 8"
+    """
+    Use the provided test data file to test the trained weights
+    for a given class number vs. 8
+    """
     global test_lines
-    p = 0;
-    n = 0;
+    p = 0; # positive - correct classification
+    n = 0; # negative - incorrect classification
     for line in test_lines:
         # split the line of data into a vector of ints
         vector = [int(x) for x in line.strip().split(',')]
-        (o, t) = getOandT(vector, cls)        
-        if (o == t):
+        (o, t) = getOandT(vector, cls)
+        if o == None or t == None:
+            continue
+        elif o == t:
             p = p + 1
         else:
             n = n + 1
-    print('Success Rate of %d vs. %d: %f\n' % (8, cls, float(p)/float(n + p)))
+    print 'Success Rate of %d vs. %d: %f\n' % (cls, 8, float(p)/float(n + p))
 
 def getOandT(vector, cls):
-    "Get o and t values"
+    """
+    returns a tuple of o and t values, comparing cls to 8
+    -1 = cls
+    1 = 8
+    None = provided instance vector is not 8 or the provided class (cls)
+    """
+    if vector[-1] == 8:
+        t = 1
+    elif vector[-1] == cls:
+        t = -1
+    else:
+        return (None, None)
+    
     total = 0.0
     for i in xrange(num_features):
         total += weights[cls][i]*vector[i]
     o = sgn(total)
-    
-    # expected value of t is -1 or 1
-    # an 8 is encoded as 1, and the compared number is encoded -1
-    if vector[-1] == 8:
-        t = 1
-    else:
-        t = -1
-        
+            
     return (o, t)
         
 def sgn(val):
+    """
+    Sign function returns 1 for positive (> 0)
+    or -1 for <= 0
+    """
     if val > 0:
         return 1
     else:
