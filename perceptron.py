@@ -2,17 +2,17 @@ from optparse import OptionParser
 import sys
 import random
 
-learning_rate = .2
 num_features = None
 train_lines = []
 test_lines = []
 weights = {}
 
-def main(trainfile_string, testfile_string):
+def main(trainfile_string, testfile_string, epochs, learning_rate):
     global train_lines
     global test_lines
     global num_features
     global weights
+    
     train_lines = open(trainfile_string, 'r').readlines()
     test_lines = open(testfile_string, 'r').readlines()    
     num_features = len(train_lines[0].strip().split(',')) - 1
@@ -22,17 +22,17 @@ def main(trainfile_string, testfile_string):
         if n != 8:
             # start with random weights in range (-1, 1)            
             weights[n] = [random.uniform(-1,1) for i in xrange(num_features)]
-    # train and test each class
+    # train each class for the specified num of epochs, and test each
     for cls in weights.keys():
-        train(cls)
+        for i in xrange(epochs):
+            train(cls, learning_rate)
         test(cls)
             
-def train(cls):
+def train(cls, learning_rate):
     """
     Train perceptron to differentiate between cls and 8,
     and return the trained weights weights
     """
-    global learning_rate
     global num_features
     global train_lines
 
@@ -99,14 +99,12 @@ def sgn(val):
         return -1
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print 'Usage: python perceptron.py --train=<training file> --test=<test file>'
-        sys.exit(1)
-    else:
-        parser = OptionParser()
-        parser.add_option("--train", dest="trainfile",
-                          help="specify the file with training data")
-        parser.add_option("--test", dest="testfile",
-                          help="specify the file with test data")
-        (options, args) = parser.parse_args()
-        main(options.trainfile, options.testfile)
+    parser = OptionParser()
+    parser.add_option("--train", dest="trainfile", default="data/optdigits.tra", help="file with training data. default is 'data/optdigits.tra'.")
+    parser.add_option("--test", dest="testfile", default="data/optdigits.tes", help="file with test data. default is 'data/optdigits.tes'.")
+    parser.add_option("--epochs", dest="epochs", default=5, help="number of epochs.  default is 5.")
+    parser.add_option("--rate", dest="rate", default=.2, help="learning rate.  default is .2")
+    
+    (options, args) = parser.parse_args()
+    print options.trainfile + options.testfile
+    main(options.trainfile, options.testfile, int(options.epochs), float(options.rate))
