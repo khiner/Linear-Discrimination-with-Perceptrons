@@ -5,29 +5,37 @@ class Perceptron(object):
     def __init__(self, trainfile_string, testfile_string):
         train_lines = open(trainfile_string, 'r').readlines()
         test_lines = open(testfile_string, 'r').readlines()
-        self.train_lines = {} # maps number to a list of training lines
-        self.test_lines = {} # maps number to a list of test lines
+        # these vectors map a class number to a list of its corresponding
+        # train/test instances (int vectors)
+        self.train_vectors = {}
+        self.test_vectors = {}
         self.num_features = len(train_lines[0].strip().split(',')) - 1
         self.weights = {}
         self.success = {}
 
-        # initialize train_lines and test_lines.
+        # initialize train_vectors and test_vectors.
         # initialize weight vectors to random values in (-1, 1)
         for n in xrange(10):
             if n != 8:
-                self.train_lines[n] = [line for line in train_lines if int(line.strip().split(',')[-1]) in (n, 8)]
-                self.test_lines[n] = [line for line in test_lines if int(line.strip().split(',')[-1]) in (n, 8)]
+                self.train_vectors[n] = []
+                self.test_vectors[n] = []
                 self.weights[n] = [random.uniform(-1,1) for i in xrange(self.num_features)]
-                self.success[n] = 0.0
-                
+                self.success[n] = 0.0                
+                for line in train_lines:
+                    vector = [int(x) for x in line.strip().split(',')]
+                    if vector[-1] in (n, 8):
+                        self.train_vectors[n].append(vector)
+                for line in test_lines:
+                    vector = [int(x) for x in line.strip().split(',')]
+                    if vector[-1] in (n, 8):
+                        self.test_vectors[n].append(vector)
+                        
     def train(self, cls, learning_rate):
         """ Train perceptron to differentiate between cls and 8,
         and return the trained weights weights """
 
-        lines = self.train_lines[cls]
-        for line in lines:
-            # split the line of data into a vector of ints    
-            vector = [int(x) for x in line.strip().split(',')]
+        vectors = self.train_vectors[cls]
+        for vector in vectors:
             (o, t) = self.getOandT(vector, cls)
             if o == None or t == None:
                 continue
@@ -38,15 +46,15 @@ class Perceptron(object):
     def testAll(self, train):
         if train:
             print 'Training:'
-            lines = self.train_lines
+            vectors = self.train_vectors
         else:
             print 'Testing:'
-            lines = self.test_lines
+            vectors = self.test_vectors
             
         total_improve = 0.0
         for cls in self.weights.keys():
             old_success = self.success[cls]
-            self.success[cls] = self.test(cls, lines)
+            self.success[cls] = self.test(cls, vectors)
             improve = self.success[cls] - old_success
             total_improve = total_improve + improve
             print 'Accuracy of %d vs. %d: %f' % (cls, 8, self.success[cls])
@@ -56,17 +64,15 @@ class Perceptron(object):
         print 'Avg change in accuracy: %f\n' % avg_improve            
         return (avg_improve > 0)
     
-    def test(self, cls, lines):
+    def test(self, cls, vectors):
         """ Use the provided test data to test the trained weights
         for a given class number vs. 8.
         Returns success rate. """
 
-        test_lines = lines[cls]
+        test_vectors = vectors[cls]
         p = 0; # positive - correct classification
         n = 0; # negative - incorrect classification
-        for line in test_lines:
-            # split the line of data into a vector of ints
-            vector = [int(x) for x in line.strip().split(',')]
+        for vector in test_vectors:
             (o, t) = self.getOandT(vector, cls)
             if o == None or t == None:
                 continue
