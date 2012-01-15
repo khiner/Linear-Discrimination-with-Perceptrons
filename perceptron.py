@@ -1,27 +1,32 @@
 from optparse import OptionParser
-import sys
 import random
 
 class Perceptron(object):
     def __init__(self, trainfile_string, testfile_string):
-        self.train_lines = open(trainfile_string, 'r').readlines()
-        self.test_lines = open(testfile_string, 'r').readlines()    
-        self.num_features = len(self.train_lines[0].strip().split(',')) - 1
+        train_lines = open(trainfile_string, 'r').readlines()
+        test_lines = open(testfile_string, 'r').readlines()
+        self.train_lines = {} # maps number to a list of training lines
+        self.test_lines = {} # maps number to a list of test lines
+        self.num_features = len(train_lines[0].strip().split(',')) - 1
         self.weights = {}
         self.success = {}
-        
+
+        # initialize train_lines and test_lines.
         # initialize weight vectors to random values for each class.
         for n in xrange(10):
             if n != 8:
+                self.train_lines[n] = [line for line in train_lines if int(line.strip().split(',')[-1]) == n or int(line.strip().split(',')[-1]) == 8]
+                self.test_lines[n] = [line for line in test_lines if int(line.strip().split(',')[-1]) == n or int(line.strip().split(',')[-1]) == 8]
                 # start with random weights in range (-1, 1)            
                 self.weights[n] = [random.uniform(-1,1) for i in xrange(self.num_features)]
                 self.success[n] = 0.0
-
+                
     def train(self, cls, learning_rate):
         """ Train perceptron to differentiate between cls and 8,
         and return the trained weights weights """
-        
-        for line in self.train_lines:
+
+        lines = self.train_lines[cls]
+        for line in lines:
             # split the line of data into a vector of ints    
             vector = [int(x) for x in line.strip().split(',')]
             (o, t) = self.getOandT(vector, cls)
@@ -57,9 +62,10 @@ class Perceptron(object):
         for a given class number vs. 8.
         Returns success rate. """
 
+        test_lines = lines[cls]
         p = 0; # positive - correct classification
         n = 0; # negative - incorrect classification
-        for line in lines:
+        for line in test_lines:
             # split the line of data into a vector of ints
             vector = [int(x) for x in line.strip().split(',')]
             (o, t) = self.getOandT(vector, cls)
