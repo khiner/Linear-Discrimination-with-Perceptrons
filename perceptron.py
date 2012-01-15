@@ -34,12 +34,15 @@ class Perceptron(object):
     def testAll(self, train):
         if train:
             print 'Training:'
+            lines = self.train_lines
         else:
-            print 'Testing:'        
+            print 'Testing:'
+            lines = self.test_lines
+            
         total_improve = 0.0
         for cls in self.weights.keys():
             old_success = self.success[cls]
-            self.success[cls] = self.test(cls, train)
+            self.success[cls] = self.test(cls, lines)
             improve = self.success[cls] - old_success
             total_improve = total_improve + improve
             print 'Accuracy of %d vs. %d: %f' % (cls, 8, self.success[cls])
@@ -49,17 +52,11 @@ class Perceptron(object):
         print 'Avg change in accuracy: %f\n' % avg_improve            
         return (avg_improve > 0)
     
-    def test(self, cls, train):
-        """ Use the provided test data file to test the trained weights
+    def test(self, cls, lines):
+        """ Use the provided test data to test the trained weights
         for a given class number vs. 8.
-        If train is true, testing is done using the training file.
         Returns success rate. """
 
-        if train:
-            lines = self.train_lines
-        else:
-            lines = self.test_lines
-            
         p = 0; # positive - correct classification
         n = 0; # negative - incorrect classification
         for line in lines:
