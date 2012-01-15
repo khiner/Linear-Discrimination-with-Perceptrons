@@ -12,12 +12,11 @@ class Perceptron(object):
         self.success = {}
 
         # initialize train_lines and test_lines.
-        # initialize weight vectors to random values for each class.
+        # initialize weight vectors to random values in (-1, 1)
         for n in xrange(10):
             if n != 8:
-                self.train_lines[n] = [line for line in train_lines if int(line.strip().split(',')[-1]) == n or int(line.strip().split(',')[-1]) == 8]
-                self.test_lines[n] = [line for line in test_lines if int(line.strip().split(',')[-1]) == n or int(line.strip().split(',')[-1]) == 8]
-                # start with random weights in range (-1, 1)            
+                self.train_lines[n] = [line for line in train_lines if int(line.strip().split(',')[-1]) in (n, 8)]
+                self.test_lines[n] = [line for line in test_lines if int(line.strip().split(',')[-1]) in (n, 8)]
                 self.weights[n] = [random.uniform(-1,1) for i in xrange(self.num_features)]
                 self.success[n] = 0.0
                 
