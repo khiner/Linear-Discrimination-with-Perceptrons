@@ -31,29 +31,38 @@ class Perceptron(object):
             for i in xrange(self.num_features):
                 self.weights[cls][i] += learning_rate*(t - o)*vector[i]
                 
-    def testAll(self):
-        total_improve = 0.0    
+    def testAll(self, train):
+        if train:
+            print 'Training:'
+        else:
+            print 'Testing:'        
+        total_improve = 0.0
         for cls in self.weights.keys():
             old_success = self.success[cls]
-            self.success[cls] = self.test(cls)
+            self.success[cls] = self.test(cls, train)
             improve = self.success[cls] - old_success
             total_improve = total_improve + improve
-            print 'Success Rate of %d vs. %d: %f\n' % (cls, 8, self.success[cls])
+            print 'Accuracy of %d vs. %d: %f' % (cls, 8, self.success[cls])
 
         avg_improve = total_improve/9.0
-    
-        print '\nAvg improvement: %f\n' % avg_improve
-    
+
+        print 'Avg change in accuracy: %f\n' % avg_improve            
         return (avg_improve > 0)
     
-    def test(self, cls):
+    def test(self, cls, train):
         """ Use the provided test data file to test the trained weights
-        for a given class number vs. 8
-        Return success rate """
-    
+        for a given class number vs. 8.
+        If train is true, testing is done using the training file.
+        Returns success rate. """
+
+        if train:
+            lines = self.train_lines
+        else:
+            lines = self.test_lines
+            
         p = 0; # positive - correct classification
         n = 0; # negative - incorrect classification
-        for line in self.test_lines:
+        for line in lines:
             # split the line of data into a vector of ints
             vector = [int(x) for x in line.strip().split(',')]
             (o, t) = self.getOandT(vector, cls)
@@ -63,7 +72,7 @@ class Perceptron(object):
                 p = p + 1
             else:
                 n = n + 1
-            
+
         return float(p)/float(n + p)
 
     def getOandT(self, vector, cls):
@@ -106,6 +115,7 @@ if __name__ == "__main__":
     for i in xrange(int(options.max_epochs)):
         for cls in perceptron.weights.keys():
             perceptron.train(cls, float(options.rate))
-        if not perceptron.testAll():
+        print 'Epoch: %d' % (i + 1)
+        if not perceptron.testAll(train=True):
             break
-    
+    perceptron.testAll(train=False)
