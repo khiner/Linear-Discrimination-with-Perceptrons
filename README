@@ -2,14 +2,28 @@
 
 AUTHOR: Karl Hiner
 INFO: HW1, CS 445, Machine Learning, Winter 2012.
-DESCRIPTION: A perceptron to classify the handwritten number data at
+DESCRIPTION:
+A perceptron to classify the handwritten number data at
 http://archive.ics.uci.edu/ml/datasets/Optical+Recognition+of+Handwritten+Digits
+The perceptron trains on data in a user-specified training file
+(defaulting to 'data/optdigits.tra') until the average accuracy for all
+classes is no longer increasing, and then tests the trained weightings
+on a user-specified test file (defaulting to 'data/optdigits.tes').
 
 USAGE:
-> python perceptron.py --train=<training file> --test=<test file>
+To use default parameters and defualt train/test files, simply run
+> python perceptron.py
 
-<training file> and <test file> are replaced with the names of the
-training and test files, respectfully
+OPTIONS:
+  -h, --help                            show help message and exit
+
+  -n TRAIN_FILE, --train=TRAIN_FILE     file with training data.
+                                        default: 'data/optdigits.tra'
+  -t TEST_FILE, --test=TEST_FILE        file with test data.
+                                        default: 'data/optdigits.tes'
+  -e MAX_EPOCHS, --epochs=MAX_EPOCHS    maximum number of epochs.
+                                        default: 10
+  -r RATE, --rate=RATE                  learning rate. default: 0.2
 
 NOTES:
 With minor variations to code in perceptron.py, this perceptron is easily

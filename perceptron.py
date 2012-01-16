@@ -31,8 +31,8 @@ class Perceptron(object):
                         self.test_vectors[n].append(vector)
                         
     def train(self, cls, learning_rate):
-        """ Train perceptron to differentiate between cls and 8,
-        and return the trained weights weights """
+        """Train perceptron to differentiate between cls and 8,
+        and return the trained weights weights"""
 
         vectors = self.train_vectors[cls]
         for vector in vectors:
@@ -65,9 +65,9 @@ class Perceptron(object):
         return (avg_improve > 0)
     
     def test(self, cls, vectors):
-        """ Use the provided test data to test the trained weights
+        """Use the provided test data to test the trained weights
         for a given class number vs. 8.
-        Returns success rate. """
+        Returns success rate."""
 
         test_vectors = vectors[cls]
         p = 0; # positive - correct classification
@@ -84,10 +84,9 @@ class Perceptron(object):
         return float(p)/float(n + p)
 
     def getOandT(self, vector, cls):
-        """ Returns a tuple of o and t values, comparing cls to 8
-        -1 = cls
-        1 = 8
-        None = provided instance vector is not 8 or the provided class (cls) """    
+        """Returns a tuple of o and t values, comparing cls to 8
+        -1 = cls, 1 = 8
+        None = provided instance vector is not 8 or the provided class (cls)"""    
         if vector[-1] == 8:
             t = 1
         elif vector[-1] == cls:
@@ -103,7 +102,7 @@ class Perceptron(object):
         return (o, t)
     
 def sgn(val):
-    """ Returns 1 for positive (> 0) and -1 for <= 0 """
+    """Returns 1 for val > 0 and -1 for val <= 0"""
     if val > 0:
         return 1
     else:
@@ -111,15 +110,16 @@ def sgn(val):
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("--train", dest="trainfile", default="data/optdigits.tra", help="file with training data. default is 'data/optdigits.tra'.")
-    parser.add_option("--test", dest="testfile", default="data/optdigits.tes", help="file with test data. default is 'data/optdigits.tes'.")
-    parser.add_option("--max_epochs", dest="max_epochs", default=10, help="maximum number of epochs.  default is 10.")
-    parser.add_option("--rate", dest="rate", default=.2, help="learning rate.  default is .2")
+    parser.add_option("-n", "--train", dest="train_file", default="data/optdigits.tra", help="file with training data. default: 'data/optdigits.tra'")
+    parser.add_option("-t", "--test", dest="test_file", default="data/optdigits.tes", help="file with test data. default: 'data/optdigits.tes'")
+    parser.add_option("-e", "--epochs", dest="max_epochs", default=10, help="maximum number of epochs.  default: 10")
+    parser.add_option("-r", "--rate", dest="rate", default=.2, help="learning rate.  default: 0.2")
     
     (options, args) = parser.parse_args()
-    perceptron = Perceptron(options.trainfile, options.testfile)
+    perceptron = Perceptron(options.train_file, options.test_file)
     # train each class, then test them all.
-    # when there is no improvement, break
+    # when there is no more improvement in accuracy,
+    # stop training and run test
     for i in xrange(int(options.max_epochs)):
         for cls in perceptron.weights.keys():
             perceptron.train(cls, float(options.rate))
