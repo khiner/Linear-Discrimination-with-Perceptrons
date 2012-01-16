@@ -11,7 +11,6 @@ class Perceptron(object):
         self.test_vectors = {}
         self.num_features = len(train_lines[0].strip().split(',')) - 1
         self.weights = {}
-        self.success = {}
 
         # initialize train_vectors and test_vectors.
         # initialize weight vectors to random values in (-1, 1)
@@ -20,7 +19,6 @@ class Perceptron(object):
                 self.train_vectors[n] = []
                 self.test_vectors[n] = []
                 self.weights[n] = [random.uniform(-1,1) for i in xrange(self.num_features)]
-                self.success[n] = 0.0                
                 for line in train_lines:
                     vector = [int(x) for x in line.strip().split(',')]
                     if vector[-1] in (n, 8):
@@ -29,50 +27,53 @@ class Perceptron(object):
                     vector = [int(x) for x in line.strip().split(',')]
                     if vector[-1] in (n, 8):
                         self.test_vectors[n].append(vector)
-                        
+
+    def run(self, max_epochs, rate):
+        """For each class, train until there is no more improvement
+        (or accuracy is a perfect 1.0), then test the class using the
+        test file"""
+        
+        for cls in self.weights.keys():
+            improvement = 1
+            epoch = 0
+            accuracy = 0
+            print '_%dv%d_\nTraining:' % (cls, 8)
+            while accuracy < 1.0 and \
+                  improvement > 0 and epoch < max_epochs:
+                epoch = epoch + 1
+                self.train(cls, rate)
+                (old_accuracy, accuracy) = (accuracy, self.test(cls, train=True))
+                improvement = accuracy - old_accuracy
+                print 'Epoch %d, accuracy: %f, improvement: %f' % \
+                (epoch, accuracy, improvement)
+            print 'Testing:\naccuracy: %f\n' % \
+            self.test(cls, train=False)
+        
     def train(self, cls, learning_rate):
         """Train perceptron to differentiate between cls and 8,
         and return the trained weights weights"""
 
-        vectors = self.train_vectors[cls]
-        for vector in vectors:
+        for vector in self.train_vectors[cls]:
             (o, t) = self.getOandT(vector, cls)
             if o == None or t == None:
                 continue
             # adjust the weights
             for i in xrange(self.num_features):
                 self.weights[cls][i] += learning_rate*(t - o)*vector[i]
-                
-    def testAll(self, train):
-        if train:
-            print 'Training:'
-            vectors = self.train_vectors
-        else:
-            print 'Testing:'
-            vectors = self.test_vectors
-            
-        total_improve = 0.0
-        for cls in self.weights.keys():
-            old_success = self.success[cls]
-            self.success[cls] = self.test(cls, vectors)
-            improve = self.success[cls] - old_success
-            total_improve = total_improve + improve
-            print 'Accuracy of %d vs. %d: %f' % (cls, 8, self.success[cls])
 
-        avg_improve = total_improve/9.0
-
-        print 'Avg change in accuracy: %f\n' % avg_improve            
-        return (avg_improve > 0)
-    
-    def test(self, cls, vectors):
+    def test(self, cls, train):
         """Use the provided test data to test the trained weights
         for a given class number vs. 8.
-        Returns success rate."""
+        Returns accuracy rate."""
 
-        test_vectors = vectors[cls]
+        if train:
+            vectors = self.train_vectors[cls]
+        else:
+            vectors = self.test_vectors[cls]
+        
         p = 0; # positive - correct classification
         n = 0; # negative - incorrect classification
-        for vector in test_vectors:
+        for vector in vectors:
             (o, t) = self.getOandT(vector, cls)
             if o == None or t == None:
                 continue
@@ -117,13 +118,6 @@ if __name__ == "__main__":
     
     (options, args) = parser.parse_args()
     perceptron = Perceptron(options.train_file, options.test_file)
-    # train each class, then test them all.
-    # when there is no more improvement in accuracy,
-    # stop training and run test
-    for i in xrange(int(options.max_epochs)):
-        for cls in perceptron.weights.keys():
-            perceptron.train(cls, float(options.rate))
-        print 'Epoch: %d' % (i + 1)
-        if not perceptron.testAll(train=True):
-            break
-    perceptron.testAll(train=False)
+    perceptron.run(max_epochs=int(options.max_epochs), \
+                   rate=float(options.rate))
+    
