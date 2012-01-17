@@ -25,6 +25,9 @@ OPTIONS:
                                         default: 10
   -r RATE, --rate=RATE                  learning rate. default: 0.2
 
+  -v VERBOSE, --verbose=VERBOSE         would you like to print more
+                                        detailed output?
+
 NOTES:
 With minor variations to code in perceptron.py, this perceptron is easily
 generalizable to classify any data with features and classes encoded as
