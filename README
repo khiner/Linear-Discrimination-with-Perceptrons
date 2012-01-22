@@ -34,5 +34,5 @@ generalizable to classify any data with features and classes encoded as
 integers.
 
 The data is expected to be in CSV format, with one line per instance,
-where all integers in the line are features, except the last line, which
-should be the class of the instance.
+where all integers in the line are features, except the last int in the
+line, which should be the class of the instance.

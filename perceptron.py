@@ -19,6 +19,7 @@ class Perceptron(object):
                 self.train_vectors[n] = []
                 self.test_vectors[n] = []
                 self.weights[n] = [random.uniform(-1,1) for i in xrange(self.num_features)]
+                self.weights[n].append(1.0) # input bias
                 for line in train_lines:
                     vector = [int(x) for x in line.strip().split(',')]
                     if vector[-1] in (n, 8):
@@ -63,8 +64,8 @@ class Perceptron(object):
             (o, t) = self.getOandT(vector, cls)
             if o == None or t == None:
                 continue
-            # adjust the weights
-            for i in xrange(self.num_features):
+            # adjust the weights (+1 for bias)
+            for i in xrange(self.num_features + 1):
                 self.weights[cls][i] += learning_rate*(t - o)*vector[i]
 
     def test(self, cls, train):
@@ -109,9 +110,9 @@ class Perceptron(object):
             return (None, None)
         
         total = 0.0
-        for i in xrange(self.num_features):
+        for i in xrange(self.num_features + 1):
             total += self.weights[cls][i]*vector[i]
-            o = sgn(total)
+        o = sgn(total)
         
         return (o, t)
 
