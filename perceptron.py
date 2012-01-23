@@ -1,3 +1,5 @@
+"""Author: Karl Hiner"""
+
 from optparse import OptionParser
 import random
 
@@ -29,7 +31,7 @@ class Perceptron(object):
                     if vector[-1] in (n, 8):
                         self.test_vectors[n].append(vector)
 
-    def run(self, max_epochs, rate):
+    def run(self, max_epochs, rate, over_train=False, verbose=False):
         """For each class, train until there is no more improvement
         (or accuracy is a perfect 1.0), then test the class using the
         test file"""
@@ -38,11 +40,19 @@ class Perceptron(object):
             improvement = 1
             epoch = 0
             train_accuracy = 0
+            over_train_epochs = max_epochs
             print '___________%dv%d____________' % (cls, 8)
             if verbose:
                 print 'Training:'
-            while train_accuracy < 1.0 and \
-                  improvement > 0 and epoch < max_epochs:
+            epochs_set = False
+            while (not over_train and train_accuracy < 1.0 and \
+                   improvement > 0.0 and epoch < max_epochs) \
+                   or (over_train and epoch < over_train_epochs):
+                if not epochs_set and (improvement <= 0.0 or train_accuracy >= 1.0):
+                    # if we're overtraining, train for twice as long as normal
+                    over_train_epochs = 2*epoch
+                    epochs_set = True
+                    print 'over-training. improvement stopped at %d' % epoch
                 epoch = epoch + 1
                 self.train(cls, rate)
                 (c1, i1, c2, i2) = self.test(cls, train=True)
@@ -51,9 +61,10 @@ class Perceptron(object):
                 if verbose:
                     print 'Epoch %d, accuracy: %f, improvement: %f\n\n%s' % \
                     (epoch, train_accuracy, improvement, confusionMatrix(cls, c1, i1, c2, i2))
+            # done training.  now test.
             (c1, i1, c2, i2) = self.test(cls, train=False)
             test_accuracy = float(c1 + c2)/float(c1+ c2 + i1 + i2)
-            print "Epochs: %d\nTraning accuracy: %f\nTest accuracy: %f\n\n%s" \
+            print "Epochs: %d\nTraining accuracy: %f\nTest accuracy: %f\n\n%s" \
             % (epoch, train_accuracy, test_accuracy, confusionMatrix(cls, c1, i1, c2, i2))
 
     def train(self, cls, learning_rate):
@@ -128,16 +139,16 @@ def sgn(val):
         return -1
 
 if __name__ == "__main__":
-    global verbose
     parser = OptionParser()
     parser.add_option("-n", "--train", dest="train_file", default="data/optdigits.tra", help="file with training data. default: 'data/optdigits.tra'")
     parser.add_option("-t", "--test", dest="test_file", default="data/optdigits.tes", help="file with test data. default: 'data/optdigits.tes'")
-    parser.add_option("-e", "--epochs", dest="max_epochs", default=10, help="maximum number of epochs.  default: 10")
+    parser.add_option("-e", "--epochs", dest="max_epochs", default=30, help="maximum number of epochs.  default: 30")
     parser.add_option("-r", "--rate", dest="rate", default=.2, help="learning rate.  default: 0.2")
-    parser.add_option("-v", "--verbose", dest = "verbose", default=False, help="would you like to print more detailed output?")
+    parser.add_option("-v", "--verbose", dest="verbose", default=False, help="would you like to print more detailed output?")
+    parser.add_option("-o", "--over-train", dest="over_train", default=False, help="if set to true, training will go for twice as many epochs as it takes to stop improving")
     (options, args) = parser.parse_args()
     verbose = options.verbose
     perceptron = Perceptron(options.train_file, options.test_file)
     perceptron.run(max_epochs=int(options.max_epochs), \
-                   rate=float(options.rate))
+                   rate=float(options.rate), over_train=options.over_train, verbose=options.verbose)
     
